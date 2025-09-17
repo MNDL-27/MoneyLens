@@ -1,0 +1,20 @@
+version: '3.8'
+
+services:
+  api:
+    environment:
+      - ML_API_DEBUG=false
+    ports: []  # Remove direct port exposure in production
+
+  web:
+    ports: []  # Remove direct port exposure in production
+
+  nginx:
+    environment:
+      - NGINX_WORKER_PROCESSES=auto
+      - NGINX_WORKER_CONNECTIONS=1024
+    volumes:
+      - ./nginx/ssl:/etc/ssl/certs:ro  # Mount SSL certificates if available
+    # Uncomment for HTTPS
+    # ports:
+    #   - "443:443"
