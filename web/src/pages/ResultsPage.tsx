@@ -1,6 +1,7 @@
 // web/src/pages/ResultsPage.tsx
 import React from "react";
 import { exportCsv } from "../services/api";
+import { fmtCurrency, fmtDate } from "../utils/format"; // optional helpers
 
 export default function ResultsPage({
   result,
@@ -9,6 +10,7 @@ export default function ResultsPage({
   result: any;
   onReset: () => void;
 }) {
+  if (!result) return null; // safety guard [memory:9]
   const { totals, transactions, metadata } = result;
 
   const onExport = async () => {
@@ -26,10 +28,10 @@ export default function ResultsPage({
       <section style={{ marginBottom: 16 }}>
         <h2 style={{ margin: "8px 0" }}>Totals</h2>
         <ul>
-          <li>Inflow: {totals.inflow}</li>
-          <li>Outflow: {totals.outflow}</li>
-          <li>Net: {totals.net}</li>
-          <li>Total flow: {totals.flow_volume}</li>
+          <li>Inflow: {fmtCurrency?.(totals.inflow) ?? totals.inflow}</li>
+          <li>Outflow: {fmtCurrency?.(totals.outflow) ?? totals.outflow}</li>
+          <li>Net: {fmtCurrency?.(totals.net) ?? totals.net}</li>
+          <li>Total flow: {fmtCurrency?.(totals.flow_volume) ?? totals.flow_volume}</li>
         </ul>
       </section>
 
@@ -57,12 +59,14 @@ export default function ResultsPage({
             </thead>
             <tbody>
               {transactions.map((t: any, idx: number) => (
-                <tr key={idx}>
-                  <td>{t.date}</td>
+                <tr key={`${t.date}-${t.amount}-${idx}`}>
+                  <td>{fmtDate?.(t.date) ?? t.date}</td>
                   <td>{t.description}</td>
-                  <td align="right">{t.amount}</td>
+                  <td align="right">{fmtCurrency?.(t.amount) ?? t.amount}</td>
                   <td>{t.type}</td>
-                  <td align="right">{t.balance ?? ""}</td>
+                  <td align="right">
+                    {t.balance != null ? (fmtCurrency?.(t.balance) ?? t.balance) : ""}
+                  </td>
                 </tr>
               ))}
             </tbody>

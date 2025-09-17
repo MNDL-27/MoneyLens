@@ -1,52 +1,108 @@
-<<<<<<< HEAD
-# MoneyLens — Run Guide
+# MoneyLens
+
+> **Parse bank statement PDFs with a FastAPI backend (text-first, OCR fallback) and a Vite+React SPA frontend.**
+> **Run locally or in production with Docker Compose.**
+# MoneyLens
+
+> **Run locally or in production with Docker Compose.**
+
+## Features
+- **Text-first parsing** with [pdfplumber](https://github.com/jsvine/pdfplumber); **OCR fallback** via [pdf2image](https://github.com/Belval/pdf2image) + [Tesseract](https://github.com/tesseract-ocr/tesseract) for scanned PDFs.
+- **Endpoints:**
+	- `GET /healthz` — health check
+	- `GET /version` — API version
+	- `POST /parse/pdf` — upload and parse statement
+	- `POST /export/csv` — export last parse as CSV
+- **Web app:**
+	- Upload PDF, choose mode (auto | text | ocr)
+	- View totals & transactions
+	- Export CSV
+- **Dockerized:**
+	- Dev (hot reload) and prod-like (Nginx static + API) Compose setups
 
 ## Prerequisites
-- Docker and Docker Compose installed
-- Ports available: WEB_PORT (default 8080), API_PORT (default 8000)
+- Docker & Docker Compose installed
+- Default ports: `WEB_PORT=8080`, `API_PORT=8000` (configurable)
 
-## 1) Configure env
+## Quick start (production‑like)
+```
 cd compose
 cp .env.example .env
-# Edit .env if needed (WEB_PORT, API_PORT, ML_* toggles)
+# Optionally edit WEB_PORT, API_PORT, ML_* values in .env
+docker compose -f docker-compose.yml up --build
+```
+Open [http://localhost:8080](http://localhost:8080) (or your chosen `WEB_PORT`).
 
-## 2) Development (hot reload API + Vite dev server)
+## Development (hot reload)
+Runs Vite dev server for the web and a reloadable FastAPI API. [memory:8]
+```
 cd compose
 docker compose -f docker-compose.dev.yml up --build
-# Open http://localhost:${WEB_PORT}
+```
+Open [http://localhost:8080](http://localhost:8080). In dev, `/api` is proxied by Vite to the API container.
 
-## 3) Production-like (nginx static + api)
-cd compose
-docker compose -f docker-compose.yml up --build
-# Open http://localhost:${WEB_PORT}
+## Environment variables (ML_*)
+These are read by the API via pydantic‑settings (env prefix ML_). Set them in `compose/.env`. [memory:9]
+- `ML_MAX_UPLOAD_MB` — Maximum upload size in MB (default: 20)
+- `ML_OCR_ENABLED` — Enable OCR fallback (`true`/`false`, default: true)
+- `ML_OCR_DPI` — Rasterization DPI for OCR (e.g., 300 or 400)
+- `ML_ALLOWED_ORIGINS` — Comma-separated list for CORS (e.g., `http://localhost:8080`)
 
-## 4) Rebuild after code changes
-# Dev:
-docker compose -f docker-compose.dev.yml build --no-cache api
-# Prod:
-docker compose -f docker-compose.yml build --no-cache
-
-## 5) Common tips
-# Check container logs
+## Useful commands
+Check logs:
+```
 docker logs -f moneylens-api
 docker logs -f moneylens-web
+```
+Health check:
+```
+curl http://localhost:8000/healthz
+```
+Rebuild images:
+```
+# Dev: rebuild API only
+docker compose -f compose/docker-compose.dev.yml build --no-cache api
 
-# Health endpoints
-curl http://localhost:${API_PORT}/healthz
+# Prod-like: rebuild everything
+docker compose -f compose/docker-compose.yml build --no-cache
+```
+---
 
-# Large PDFs
-# Increase ML_MAX_UPLOAD_MB in compose/.env and restart compose.
+## Project layout
+```
+api/       FastAPI service, text + OCR extraction, totals, CSV export
+web/       Vite + React SPA, Nginx for prod build, dev proxy to /api
+compose/   Docker Compose files and .env template
+```
+---
 
-# OCR quality
-# Increase ML_OCR_DPI (e.g., 300 -> 400) if scanned text is poor.
+## Local tooling (optional)
+If running the API without Docker, ensure system packages are installed:
+If running the API without Docker, ensure system packages are installed:
+- Poppler (for pdf2image)
+- Tesseract OCR
+- Python 3.11+
 
-# CORS for external hosts
-# Add the web origin to ML_ALLOWED_ORIGINS in compose/.env.
+Then:
+```sh
+cd api
+uvicorn app.main:app --reload --port 8000
+```
 
-## 6) Project layout (key)
-api/   -> FastAPI app with text-first parsing and OCR fallback
-web/   -> Vite+React SPA, proxies /api to backend in dev and prod
-compose/ -> docker-compose files and env
-=======
-# MoneyLens
->>>>>>> 7e217e39ced6cd2cfb3984a1f29c06a7393003cc
+And run the web dev server:
+```sh
+cd web
+npm install
+npm run dev
+```
+Open [http://localhost:8080](http://localhost:8080).
+
+## License
+---
+
+## 📄 License
+
+MIT
+```
+
+If a “Screenshots” or “Roadmap” section is needed later, it can be appended with images and planned tasks.
