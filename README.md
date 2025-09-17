@@ -11,98 +11,146 @@
 - **Endpoints:**
 	- `GET /healthz` — health check
 	- `GET /version` — API version
-	- `POST /parse/pdf` — upload and parse statement
-	- `POST /export/csv` — export last parse as CSV
-- **Web app:**
-	- Upload PDF, choose mode (auto | text | ocr)
-	- View totals & transactions
-	- Export CSV
-- **Dockerized:**
-	- Dev (hot reload) and prod-like (Nginx static + API) Compose setups
 
-## Prerequisites
-- Docker & Docker Compose installed
-- Default ports: `WEB_PORT=8080`, `API_PORT=8000` (configurable)
+	<p align="center">
+		<img src="https://placehold.co/600x120?text=MoneyLens+Logo" alt="MoneyLens Logo" width="400" />
+	</p>
 
-## Quick start (production‑like)
-```
-cd compose
-cp .env.example .env
-# Optionally edit WEB_PORT, API_PORT, ML_* values in .env
-docker compose -f docker-compose.yml up --build
-```
-Open [http://localhost:8080](http://localhost:8080) (or your chosen `WEB_PORT`).
+	<h1 align="center">MoneyLens</h1>
 
-## Development (hot reload)
-Runs Vite dev server for the web and a reloadable FastAPI API. [memory:8]
-```
-cd compose
-docker compose -f docker-compose.dev.yml up --build
-```
-Open [http://localhost:8080](http://localhost:8080). In dev, `/api` is proxied by Vite to the API container.
+	<p align="center">
+		<b>Parse bank statement PDFs with FastAPI backend and Vite+React SPA frontend.</b><br>
+		<i>Runs locally or in production with Docker Compose.</i>
+	</p>
 
-## Environment variables (ML_*)
-These are read by the API via pydantic‑settings (env prefix ML_). Set them in `compose/.env`. [memory:9]
-- `ML_MAX_UPLOAD_MB` — Maximum upload size in MB (default: 20)
-- `ML_OCR_ENABLED` — Enable OCR fallback (`true`/`false`, default: true)
-- `ML_OCR_DPI` — Rasterization DPI for OCR (e.g., 300 or 400)
-- `ML_ALLOWED_ORIGINS` — Comma-separated list for CORS (e.g., `http://localhost:8080`)
+	<p align="center">
+		<a href="#features"><img src="https://img.shields.io/badge/features-fast%20pdf%20parsing-blue" alt="Features" /></a>
+		<a href="#license"><img src="https://img.shields.io/badge/license-MIT-green" alt="License" /></a>
+		<a href="#tech-stack"><img src="https://img.shields.io/badge/tech-stack%20%7C%20FastAPI%20%7C%20Vite%20%7C%20React%20%7C%20Docker-yellow" alt="Tech Stack" /></a>
+		<a href="https://github.com/MNDL-27/MoneyLens/actions"><img src="https://img.shields.io/github/actions/workflow/status/MNDL-27/MoneyLens/main.yml?branch=main" alt="Build Status" /></a>
+	</p>
 
-## Useful commands
-Check logs:
-```
-docker logs -f moneylens-api
-docker logs -f moneylens-web
-```
-Health check:
-```
-curl http://localhost:8000/healthz
-```
-Rebuild images:
-```
-# Dev: rebuild API only
-docker compose -f compose/docker-compose.dev.yml build --no-cache api
+	---
 
-# Prod-like: rebuild everything
-docker compose -f compose/docker-compose.yml build --no-cache
-```
----
+	## 🚀 Quick Links
 
-## Project layout
-```
-api/       FastAPI service, text + OCR extraction, totals, CSV export
-web/       Vite + React SPA, Nginx for prod build, dev proxy to /api
-compose/   Docker Compose files and .env template
-```
----
+	- [Features](#features)
+	- [Getting Started](#getting-started)
+	- [Project Layout](#project-layout)
+	- [Local Tooling](#local-tooling-optional)
+	- [License](#license)
 
-## Local tooling (optional)
-If running the API without Docker, ensure system packages are installed:
-If running the API without Docker, ensure system packages are installed:
-- Poppler (for pdf2image)
-- Tesseract OCR
-- Python 3.11+
+	---
 
-Then:
-```sh
-cd api
-uvicorn app.main:app --reload --port 8000
-```
+	## ✨ Features
 
-And run the web dev server:
-```sh
-cd web
-npm install
-npm run dev
-```
-Open [http://localhost:8080](http://localhost:8080).
+	| Feature                | Description                                                                 |
+	|------------------------|-----------------------------------------------------------------------------|
+	| Fast PDF Parsing       | Uses pdfplumber for fast parsing; OCR fallback with pdf2image + Tesseract    |
+	| Web SPA                | Vite+React frontend for uploads, table view, CSV export                     |
+	| Dockerized             | Local/dev and prod Compose setups                                           |
+	| Healthcheck Endpoint   | `/healthcheck` for API status                                               |
+	| CSV Export             | Export parsed data as CSV                                                   |
+	| Bank Statement Support | Modular banks (SBI, HDFC, etc.)                                            |
 
-## License
----
+	<details>
+		<summary>API Endpoints</summary>
+		<ul>
+			<li><code>GET /healthcheck</code> — health check</li>
+			<li><code>GET /parse/pdf</code> — API with web UI</li>
+			<li><code>POST /parse/pdf</code> — upload and parse statement</li>
+			<li><code>GET /parse/export</code> — export list parse as CSV</li>
+		</ul>
+	</details>
 
-## 📄 License
+	---
 
-MIT
-```
+	## 🖼️ Demo & Screenshots
 
-If a “Screenshots” or “Roadmap” section is needed later, it can be appended with images and planned tasks.
+	<p align="center">
+		<img src="https://placehold.co/800x400?text=MoneyLens+Dashboard+Screenshot" alt="MoneyLens Dashboard Screenshot" width="600" />
+	</p>
+
+	---
+
+	## 🛠️ Getting Started
+
+	### Prerequisites
+
+	- Docker & Docker Compose installed
+	- Default ports: web=3000, api=8000 (configurable)
+
+	### Quick Start (Production-like)
+
+	```sh
+	cd compose
+	docker compose --env-file ../.env -f docker-compose.yml up --build
+	```
+
+	Open [http://localhost:3000](http://localhost:3000)
+
+	### Development (Hot Reload)
+
+	Run Vite dev from the web and auto-reload FastAPI (API_memory/):
+
+	```sh
+	cd compose
+	docker compose -f docker-compose-dev.yml up --build
+	```
+
+	Open [http://localhost:3000](http://localhost:3000) (hot, proxied by the UI to the API container).
+
+	### Environment Variables (ML 🧠)
+
+	These are used by API + system/config; generate ML IDs for them in your .env/.env.example:
+
+	```env
+	ML_API_SECRET=your-unique-api-secret (default: 24h)
+	ML_PDF_LIMIT=5 # Max PDFs (env: 5, dev: 10, prod: 100)
+	ML_PORT=8000 # Port for FastAPI (env: 8000, dev: 8003)
+	ML_DASHBOARD_ORIGINS=Comma-separated list for CORS (e.g. http://localhost:3000)
+	```
+
+	---
+
+	## 🗂️ Project Layout
+
+	```sh
+	api/    FastAPI: service, tests, API endpoints, banks, CSV export
+	web/    Vite+React: SPA, UI, routes, static, proxy to API
+	compose/ Docker Compose: prod/dev, env templates
+	```
+
+	---
+
+	## 🧰 Local Tooling (Optional)
+
+	If running the UI without Docker, ensure system packages are installed (if testing dev API outside Docker, ensure system packages are loaded):
+
+	- [pipx] (for packages)
+	- [Node.js]
+	- [Python 3.11+]
+
+	Then:
+
+	```sh
+	npm run setup --silent --quiet && pipx
+	```
+
+	And run the web dev server:
+
+	```sh
+	npm run dev
+	```
+
+	Open [http://localhost:3000](http://localhost:3000).
+
+	---
+
+	## �️ License
+
+	MIT
+
+	---
+
+	<sub>If a "Screenshot" or "Hosted" module is needed later, it can be opened with swap and allowed too.</sub>
