@@ -1,16 +1,38 @@
 // web/src/pages/ResultsPage.tsx
 import React from "react";
 import { exportCsv } from "../services/api";
-import { fmtCurrency, fmtDate } from "../utils/format"; // optional helpers
+import { fmtCurrency, fmtDate } from "../styles/format"; // matches your repo layout
+
+type Txn = {
+  date: string;
+  description: string;
+  amount: number;
+  type: string;
+  balance?: number | null;
+};
+
+type Totals = {
+  inflow: number;
+  outflow: number;
+  net: number;
+  flow_volume: number;
+};
+
+type ParseResult = {
+  totals: Totals;
+  transactions: Txn[];
+  metadata: Record<string, unknown>;
+};
 
 export default function ResultsPage({
   result,
   onReset,
 }: {
-  result: any;
+  result: ParseResult | null;
   onReset: () => void;
 }) {
-  if (!result) return null; // safety guard [memory:9]
+  if (!result) return null;
+
   const { totals, transactions, metadata } = result;
 
   const onExport = async () => {
@@ -28,10 +50,10 @@ export default function ResultsPage({
       <section style={{ marginBottom: 16 }}>
         <h2 style={{ margin: "8px 0" }}>Totals</h2>
         <ul>
-          <li>Inflow: {fmtCurrency?.(totals.inflow) ?? totals.inflow}</li>
-          <li>Outflow: {fmtCurrency?.(totals.outflow) ?? totals.outflow}</li>
-          <li>Net: {fmtCurrency?.(totals.net) ?? totals.net}</li>
-          <li>Total flow: {fmtCurrency?.(totals.flow_volume) ?? totals.flow_volume}</li>
+          <li>Inflow: {fmtCurrency(totals.inflow)}</li>
+          <li>Outflow: {fmtCurrency(totals.outflow)}</li>
+          <li>Net: {fmtCurrency(totals.net)}</li>
+          <li>Total flow: {fmtCurrency(totals.flow_volume)}</li>
         </ul>
       </section>
 
@@ -58,14 +80,14 @@ export default function ResultsPage({
               </tr>
             </thead>
             <tbody>
-              {transactions.map((t: any, idx: number) => (
+              {transactions.map((t: Txn, idx: number) => (
                 <tr key={`${t.date}-${t.amount}-${idx}`}>
-                  <td>{fmtDate?.(t.date) ?? t.date}</td>
+                  <td>{fmtDate(t.date)}</td>
                   <td>{t.description}</td>
-                  <td align="right">{fmtCurrency?.(t.amount) ?? t.amount}</td>
+                  <td align="right">{fmtCurrency(t.amount)}</td>
                   <td>{t.type}</td>
                   <td align="right">
-                    {t.balance != null ? (fmtCurrency?.(t.balance) ?? t.balance) : ""}
+                    {t.balance != null ? fmtCurrency(t.balance) : ""}
                   </td>
                 </tr>
               ))}
