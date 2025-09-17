@@ -1,0 +1,39 @@
+# compose/docker-compose.yml
+version: "3.9"
+
+services:
+  api:
+    build:
+      context: ../api
+      dockerfile: Dockerfile
+    container_name: moneylens-api
+    environment:
+      - ML_MAX_UPLOAD_MB=${ML_MAX_UPLOAD_MB}
+      - ML_OCR_ENABLED=${ML_OCR_ENABLED}
+      - ML_OCR_DPI=${ML_OCR_DPI}
+      - ML_ALLOWED_ORIGINS=http://localhost:${WEB_PORT}
+    expose:
+      - "${API_PORT}"
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "http://localhost:${API_PORT}/healthz"]
+      interval: 10s
+      timeout: 3s
+      retries: 5
+
+  web:
+    build:
+      context: ../web
+      dockerfile: Dockerfile
+      args:
+        - VITE_API_BASE=/api
+    container_name: moneylens-web
+    depends_on:
+      api:
+        condition: service_healthy
+    ports:
+      - "${WEB_PORT}:8080"
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "http://localhost:8080/"]
+      interval: 10s
+      timeout: 3s
+      retries: 5

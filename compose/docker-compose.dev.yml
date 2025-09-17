@@ -1,0 +1,40 @@
+# compose/docker-compose.dev.yml
+version: "3.9"
+
+services:
+  api:
+    build:
+      context: ../api
+      dockerfile: Dockerfile
+    container_name: moneylens-api-dev
+    environment:
+      - ML_MAX_UPLOAD_MB=${ML_MAX_UPLOAD_MB}
+      - ML_OCR_ENABLED=${ML_OCR_ENABLED}
+      - ML_OCR_DPI=${ML_OCR_DPI}
+      - ML_ALLOWED_ORIGINS=http://localhost:${WEB_PORT}
+    volumes:
+      - ../api/app:/app/app:rw
+    command: >
+      sh -c "uvicorn app.main:app --host 0.0.0.0 --port ${API_PORT} --reload"
+    ports:
+      - "${API_PORT}:${API_PORT}"
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "http://localhost:${API_PORT}/healthz"]
+      interval: 10s
+      timeout: 3s
+      retries: 5
+
+  web:
+    image: node:20-alpine
+    container_name: moneylens-web-dev
+    working_dir: /app
+    volumes:
+      - ../web:/app:rw
+    environment:
+      - VITE_API_BASE=/api
+    command: sh -c "npm ci && npm run dev -- --host --port ${WEB_PORT}"
+    ports:
+      - "${WEB_PORT}:${WEB_PORT}"
+    depends_on:
+      api:
+        condition: service_healthy

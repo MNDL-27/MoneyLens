@@ -1,0 +1,9 @@
+# Common ignores
+__pycache__/
+*.pyc
+venv/
+.env
+node_modules/
+build/
+dist/
+*.sqlite
