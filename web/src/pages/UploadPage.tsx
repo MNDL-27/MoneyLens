@@ -1,65 +1,82 @@
-// web/src/pages/UploadPage.tsx
 import React, { useState } from "react";
-import { parsePdf } from "../services/api";
+import DashboardLayout from "../components/DashboardLayout";
 
-type Mode = "auto" | "text" | "ocr";
-
-export default function UploadPage({ onParsed }: { onParsed: (r: any) => void }) {
+export default function UploadPage({ onParsed }: { onParsed: (result: any) => void }) {
   const [file, setFile] = useState<File | null>(null);
-  const [mode, setMode] = useState<Mode>("auto");
+  const [mode, setMode] = useState("auto");
   const [loading, setLoading] = useState(false);
-  const [err, setErr] = useState<string | null>(null);
 
-  const onSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
+  const handleSubmit = async () => {
     if (!file) return;
     setLoading(true);
-    setErr(null);
+    
+    const formData = new FormData();
+    formData.append("file", file);
+    formData.append("mode", mode);
+
     try {
-      const data = await parsePdf(file, mode);
-      onParsed(data);
-    } catch (e: any) {
-      const msg = e?.response?.data?.detail || e?.message || "Failed to parse PDF";
-      setErr(msg);
+      const response = await fetch("/api/parse", {
+        method: "POST",
+        body: formData,
+      });
+      const result = await response.json();
+      onParsed(result);
+    } catch (error) {
+      console.error("Upload failed:", error);
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <form onSubmit={onSubmit}>
-      <div style={{ margin: "12px 0" }}>
-        <input
-          type="file"
-          accept="application/pdf"
-          onChange={(e) => setFile(e.target.files?.[0] || null)}
-        />
-      </div>
-
-      <div style={{ margin: "12px 0" }}>
-        <label>
-          Mode:{" "}
-          <select value={mode} onChange={(e) => setMode(e.target.value as Mode)}>
-            <option value="auto">auto</option>
-            <option value="text">text</option>
-            <option value="ocr">ocr</option>
-          </select>
-        </label>
-      </div>
-
-      <button type="submit" disabled={!file || loading}>
-        {loading ? "Parsing..." : "Parse PDF"}
-      </button>
-
-      {err && (
-        <div style={{ color: "crimson", marginTop: 12 }}>
-          {err}
+    <DashboardLayout title="MoneyLens">
+      <div className="card card-pad max-w-2xl mx-auto">
+        <div className="mb-6">
+          <h2 className="text-xl font-semibold text-zinc-900 mb-2">Parse bank statements (PDF) and compute cash flows</h2>
         </div>
-      )}
 
-      <p style={{ color: "#666", marginTop: 12, fontSize: 13 }}>
-        Tip: For large scanned PDFs, try “ocr” mode; for digital statements, “text” is faster.
-      </p>
-    </form>
+        <div className="space-y-6">
+          <div>
+            <label className="block text-sm font-medium text-zinc-700 mb-2">Select File</label>
+            <div className="relative">
+              <input
+                type="file"
+                accept=".pdf,image/*"
+                onChange={(e) => setFile(e.target.files?.[0] || null)}
+                className="block w-full text-sm text-zinc-500 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-medium file:bg-zinc-50 file:text-zinc-700 hover:file:bg-zinc-100"
+              />
+            </div>
+            {file && (
+              <p className="mt-2 text-sm text-zinc-600">Selected: {file.name}</p>
+            )}
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-zinc-700 mb-2">Mode</label>
+            <select
+              value={mode}
+              onChange={(e) => setMode(e.target.value)}
+              className="block w-full rounded-md border-zinc-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
+            >
+              <option value="auto">auto</option>
+              <option value="ocr">ocr</option>
+              <option value="text">text</option>
+            </select>
+          </div>
+
+          <button
+            onClick={handleSubmit}
+            disabled={!file || loading}
+            className="btn btn-primary w-full justify-center disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            {loading ? "Processing..." : "Parse PDF"}
+          </button>
+
+          <div className="text-sm text-zinc-500">
+            <p>Tip: For large scanned PDFs, try "ocr" mode; for digital statements, "text" is faster.</p>
+          </div>
+        </div>
+      </div>
+    </DashboardLayout>
   );
 }
