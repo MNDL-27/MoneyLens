@@ -1,10 +1,9 @@
-# web/Dockerfile
 FROM node:20-alpine AS build
 WORKDIR /app
-COPY package.json package-lock.json* pnpm-lock.yaml* yarn.lock* ./
-RUN npm ci || yarn || pnpm i
+COPY package*.json ./
+RUN npm ci
 COPY . .
-RUN npm run build || yarn build || pnpm build
+RUN npm run build
 
 FROM nginx:alpine
 EXPOSE 8080
