@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 # MoneyLens — Run Guide
 
 ## Prerequisites
@@ -46,3 +47,6 @@ curl http://localhost:${API_PORT}/healthz
 api/   -> FastAPI app with text-first parsing and OCR fallback
 web/   -> Vite+React SPA, proxies /api to backend in dev and prod
 compose/ -> docker-compose files and env
+=======
+# MoneyLens
+>>>>>>> 7e217e39ced6cd2cfb3984a1f29c06a7393003cc
