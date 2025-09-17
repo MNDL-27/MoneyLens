@@ -1,6 +1,3 @@
-# compose/docker-compose.yml
-version: "3.9"
-
 services:
   api:
     build:
@@ -11,11 +8,11 @@ services:
       - ML_MAX_UPLOAD_MB=${ML_MAX_UPLOAD_MB}
       - ML_OCR_ENABLED=${ML_OCR_ENABLED}
       - ML_OCR_DPI=${ML_OCR_DPI}
-      - ML_ALLOWED_ORIGINS=http://localhost:${WEB_PORT}
+      - ML_ALLOWED_ORIGINS=${ML_ALLOWED_ORIGINS}
     expose:
-      - "${API_PORT}"
+      - "8000"           # internal API port
     healthcheck:
-      test: ["CMD", "wget", "-qO-", "http://localhost:${API_PORT}/healthz"]
+      test: ["CMD", "wget", "-qO-", "http://localhost:8000/healthz"]
       interval: 10s
       timeout: 3s
       retries: 5

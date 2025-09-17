@@ -6,7 +6,6 @@ from app.routers import parse, health, export
 
 app = FastAPI(title="MoneyLens API", version="0.1.0")
 
-# CORS
 app.add_middleware(
     CORSMiddleware,
     allow_origins=settings.allowed_origins,
@@ -15,7 +14,6 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# Routers
 app.include_router(health.router, prefix="")
 app.include_router(parse.router, prefix="/parse", tags=["parse"])
 app.include_router(export.router, prefix="/export", tags=["export"])
