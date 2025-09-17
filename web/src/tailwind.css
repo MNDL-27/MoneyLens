@@ -1,0 +1,15 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer components {
+  .card { @apply bg-white rounded-xl shadow-sm ring-1 ring-zinc-200; }
+  .card-pad { @apply p-4 sm:p-6; }
+  .card-title { @apply text-sm font-medium text-zinc-600; }
+  .stat { @apply text-2xl font-semibold tracking-tight text-zinc-900; }
+  .btn { @apply inline-flex items-center gap-2 px-3 py-2 rounded-md text-sm font-medium ring-1 ring-zinc-300 hover:bg-zinc-50; }
+  .btn-primary { @apply bg-zinc-900 text-white hover:bg-zinc-800; }
+  .table { @apply min-w-full text-sm; }
+  .th { @apply sticky top-0 z-10 bg-zinc-50 text-left font-semibold text-zinc-600 px-3 py-2; }
+  .td { @apply px-3 py-2 text-zinc-800; }
+}

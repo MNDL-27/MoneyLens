@@ -1,39 +1,19 @@
-// web/src/pages/ResultsPage.tsx
-import React from "react";
+import React, { useState } from "react";
+import DashboardLayout from "../components/DashboardLayout";
 import { exportCsv } from "../services/api";
-import { fmtCurrency, fmtDate } from "../styles/format"; // matches your repo layout
+import { fmtCurrency, fmtDate } from "../styles/format";
 
-type Txn = {
-  date: string;
-  description: string;
-  amount: number;
-  type: string;
-  balance?: number | null;
-};
-
-type Totals = {
-  inflow: number;
-  outflow: number;
-  net: number;
-  flow_volume: number;
-};
-
-type ParseResult = {
-  totals: Totals;
-  transactions: Txn[];
-  metadata: Record<string, unknown>;
-};
-
-export default function ResultsPage({
-  result,
-  onReset,
-}: {
-  result: ParseResult | null;
-  onReset: () => void;
-}) {
+export default function ResultsPage({ result, onReset }: { result: any; onReset: () => void }) {
+  const [metaOpen, setMetaOpen] = useState(false);
   if (!result) return null;
-
   const { totals, transactions, metadata } = result;
+
+  const stats = [
+    { label: "Inflow", value: fmtCurrency(totals.inflow), hue: "from-emerald-500 to-teal-500" },
+    { label: "Outflow", value: fmtCurrency(totals.outflow), hue: "from-rose-500 to-orange-500" },
+    { label: "Net", value: fmtCurrency(totals.net), hue: "from-indigo-500 to-violet-500" },
+    { label: "Flow", value: fmtCurrency(totals.flow_volume), hue: "from-cyan-500 to-blue-500" },
+  ];
 
   const onExport = async () => {
     const blob = await exportCsv(transactions);
@@ -46,59 +26,65 @@ export default function ResultsPage({
   };
 
   return (
-    <div>
-      <section style={{ marginBottom: 16 }}>
-        <h2 style={{ margin: "8px 0" }}>Totals</h2>
-        <ul>
-          <li>Inflow: {fmtCurrency(totals.inflow)}</li>
-          <li>Outflow: {fmtCurrency(totals.outflow)}</li>
-          <li>Net: {fmtCurrency(totals.net)}</li>
-          <li>Total flow: {fmtCurrency(totals.flow_volume)}</li>
-        </ul>
-      </section>
+    <DashboardLayout title="Results">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+        {stats.map((s) => (
+          <div key={s.label} className="card overflow-hidden">
+            <div className={`h-1.5 bg-gradient-to-r ${s.hue}`} />
+            <div className="card-pad">
+              <div className="card-title">{s.label}</div>
+              <div className="stat mt-1">{s.value}</div>
+            </div>
+          </div>
+        ))}
+      </div>
 
-      <section style={{ marginBottom: 16 }}>
-        <h3 style={{ margin: "8px 0" }}>Metadata</h3>
-        <pre style={{ background: "#f6f6f6", padding: 12, overflow: "auto" }}>
-{JSON.stringify(metadata, null, 2)}
-        </pre>
-      </section>
+      <div className="mb-6">
+        <button className="btn" onClick={() => setMetaOpen((v) => !v)}>
+          {metaOpen ? "Hide metadata" : "Show metadata"}
+        </button>
+        {metaOpen && (
+          <div className="card card-pad mt-3">
+            <pre className="prose prose-zinc text-xs overflow-auto">{JSON.stringify(metadata, null, 2)}</pre>
+          </div>
+        )}
+      </div>
 
-      <section>
-        <h3 style={{ margin: "8px 0" }}>
-          Transactions ({transactions.length})
-        </h3>
-        <div style={{ maxHeight: 360, overflow: "auto", border: "1px solid #ddd" }}>
-          <table width="100%" cellPadding={6}>
+      <div className="card overflow-hidden">
+        <div className="card-pad border-b border-zinc-200 flex items-center justify-between">
+          <h3 className="text-sm font-semibold text-zinc-800">
+            Transactions <span className="opacity-60">({transactions.length})</span>
+          </h3>
+          <div className="flex items-center gap-2">
+            <button className="btn" onClick={onReset}>Parse another</button>
+            <button className="btn btn-primary" onClick={onExport}>Export CSV</button>
+          </div>
+        </div>
+        <div className="max-h-[420px] overflow-auto">
+          <table className="table">
             <thead>
               <tr>
-                <th align="left">Date</th>
-                <th align="left">Description</th>
-                <th align="right">Amount</th>
-                <th align="left">Type</th>
-                <th align="right">Balance</th>
+                <th className="th">Date</th>
+                <th className="th">Description</th>
+                <th className="th text-right">Amount</th>
+                <th className="th">Type</th>
+                <th className="th text-right">Balance</th>
               </tr>
             </thead>
-            <tbody>
-              {transactions.map((t: Txn, idx: number) => (
-                <tr key={`${t.date}-${t.amount}-${idx}`}>
-                  <td>{fmtDate(t.date)}</td>
-                  <td>{t.description}</td>
-                  <td align="right">{fmtCurrency(t.amount)}</td>
-                  <td>{t.type}</td>
-                  <td align="right">
-                    {t.balance != null ? fmtCurrency(t.balance) : ""}
-                  </td>
+            <tbody className="divide-y divide-zinc-200">
+              {transactions.map((t: any, idx: number) => (
+                <tr key={`${t.date}-${t.amount}-${idx}`} className="odd:bg-white even:bg-zinc-50 hover:bg-zinc-100/60">
+                  <td className="td whitespace-nowrap">{fmtDate(t.date)}</td>
+                  <td className="td">{t.description}</td>
+                  <td className="td text-right tabular-nums">{fmtCurrency(t.amount)}</td>
+                  <td className="td">{t.type}</td>
+                  <td className="td text-right tabular-nums">{t.balance != null ? fmtCurrency(t.balance) : ""}</td>
                 </tr>
               ))}
             </tbody>
           </table>
         </div>
-        <div style={{ marginTop: 12 }}>
-          <button onClick={onExport}>Export CSV</button>{" "}
-          <button onClick={onReset}>Parse another</button>
-        </div>
-      </section>
-    </div>
+      </div>
+    </DashboardLayout>
   );
 }
